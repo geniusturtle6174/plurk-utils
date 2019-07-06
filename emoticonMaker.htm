@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style type="text/css">
+	canvas {
+		display: none;
+	}
+	td {
+		width: 45%;
+	}
+</style>
+</head>
+<body>
+
+<table>
+	<tr>
+		<td>
+			<canvas id="canvas"></canvas>
+			<form>
+			背景色: <input id="bgc" type="color" value="#99d98e" onchange="redraw()"><br>
+			文字色: <input id="txc" type="color" value="#ffffff" onchange="redraw()"><br>
+			內容: <input id="cnt" value="抹茶" onchange="redraw()"><br>
+			字體名稱: <input id="fntfce" value="新細明體" onchange="redraw()"><br>
+			字體大小: <input id="fntsz" type="range" min="5" max="20" step="1" value="12" onchange="redraw()"><br>
+			檢視倍率: <input id="ratio" type="range" min="1" max="10" step="1" value="6" onchange="redraw()"><br>
+			文字水平位移: <input id="ofsx" type="range" min="-5" max="5" step="1" value="0" onchange="redraw()"><br>
+			文字垂直位移: <input id="ofsy" type="range" min="-5" max="5" step="1" value="0" onchange="redraw()"><br>
+			<a href="#" download="result.png" onclick="this.href=canvas.toDataURL();">成品下載</a>
+			</form>
+		</td>
+		<td>
+			<img id="result">
+		</td>
+	</tr>
+</table>
+
+<script>
+function redraw(){
+	content = document.getElementById("cnt").value;
+	bgColor = document.getElementById("bgc").value;
+	txtColor = document.getElementById("txc").value;
+	fontFace = document.getElementById("fntfce").value;
+	fontSize = parseInt(document.getElementById("fntsz").value);
+	viewRatio = parseInt(document.getElementById("ratio").value);
+	txtOffsetX = parseInt(document.getElementById("ofsx").value);
+	txtOffsetY = parseInt(document.getElementById("ofsy").value);
+
+	arcRadius = 3;
+	marginUD = 1;
+	marginLR = 1;
+	paddingUD = 0;
+	paddingLR = 0;
+	bottomPatch = -2;
+	m = content.length * fontSize + paddingLR * 2;
+
+	canvas.width = (marginLR + arcRadius + paddingLR) * 2 + m;
+	canvas.height = (marginUD + arcRadius + paddingUD) * 2 + fontSize + bottomPatch;
+	ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+	ctx.beginPath();
+	ctx.fillStyle = bgColor;
+	ctx.lineWidth = 1;
+	
+	ctx.moveTo(marginLR + arcRadius, marginUD);
+	
+	ctx.lineTo(marginLR + arcRadius + m, marginUD);
+	
+	ctx.arcTo(
+		marginLR + arcRadius + m + arcRadius, marginUD,
+		marginLR + arcRadius + m + arcRadius, marginUD + arcRadius,
+		arcRadius
+	);
+	
+	ctx.lineTo(
+		marginLR + arcRadius + m + arcRadius,
+		marginUD + arcRadius + paddingUD + fontSize + bottomPatch
+	);
+	
+	ctx.arcTo(
+		marginLR + arcRadius + m + arcRadius,
+		marginUD + arcRadius + paddingUD + fontSize + arcRadius + bottomPatch,
+		marginLR + arcRadius + m,
+		marginUD + arcRadius + paddingUD + fontSize + arcRadius + bottomPatch,
+		arcRadius
+	);
+	
+	ctx.lineTo(
+		marginLR + arcRadius,
+		marginUD + arcRadius + paddingUD + fontSize + arcRadius + bottomPatch
+	);
+	
+	ctx.arcTo(
+		marginLR, marginUD + arcRadius + paddingUD + fontSize + arcRadius + bottomPatch,
+		marginLR, marginUD + arcRadius + paddingUD + fontSize,
+		arcRadius
+	);
+	
+	ctx.lineTo(marginLR, marginUD + arcRadius);
+	
+	ctx.arcTo(marginLR, marginUD, marginLR + arcRadius, marginUD, arcRadius);
+
+	ctx.closePath();
+	ctx.fill();
+
+	ctx.fillStyle = txtColor;
+	ctx.font = fontSize + 'px ' + fontFace;
+	ctx.textAlign = "left";
+	ctx.textBaseline = "top"; 
+	ctx.fillText(
+		content,
+		marginLR + paddingLR + arcRadius + txtOffsetX,
+		marginUD + arcRadius + paddingUD + txtOffsetY
+	);
+	
+	img = document.getElementById('result');
+	img.src = canvas.toDataURL('image/jpeg');
+	img.width = canvas.width * viewRatio;
+	img.height = canvas.height * viewRatio;
+}
+
+canvas = document.getElementById('canvas');
+ctx = canvas.getContext('2d');
+redraw();
+
+</script>
+
+</body>
+</html>
