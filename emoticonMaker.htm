@@ -3,10 +3,25 @@
 <head>
 <style type="text/css">
 	canvas {
-		display: none;
+		visibility: hidden;
+		position: absolute;
 	}
 	td {
-		width: 45%;
+		text-align: left;
+		padding: 5px;
+	}
+	td.panel {
+		width: 350px;
+		line-height: 2em;
+	}
+	img {
+		border: 1px dotted;
+	}
+	a {
+		text-decoration: none;
+	}
+	a:hover {
+		color: red;
 	}
 </style>
 </head>
@@ -14,36 +29,54 @@
 
 <table>
 	<tr>
-		<td>
+		<td class="panel">
 			<canvas id="canvas"></canvas>
 			<form>
 			背景色: <input id="bgc" type="color" value="#99d98e" onchange="redraw()"><br>
 			文字色: <input id="txc" type="color" value="#ffffff" onchange="redraw()"><br>
 			內容: <input id="cnt" value="古默寧" onchange="redraw()"><br>
 			字體名稱: <input id="fntfce" value="新細明體" onchange="redraw()"><br>
-			字體大小: <input id="fntsz" type="range" min="5" max="20" step="1" value="12" onchange="redraw()"><br>
-			檢視倍率: <input id="ratio" type="range" min="1" max="10" step="1" value="6" onchange="redraw()"><br>
-			文字水平位移: <input id="ofsx" type="range" min="-5" max="5" step="1" value="0" onchange="redraw()"><br>
-			文字垂直位移: <input id="ofsy" type="range" min="-5" max="5" step="1" value="0" onchange="redraw()"><br>
-			<a href="#" download="result.png" onclick="this.href=canvas.toDataURL();">成品下載</a>
+			字體大小: <input id="fntsz" type="range" min="5" max="20" step="1" value="12" onchange="redraw()">&nbsp;<span id="fntsz_show"></span><br>
+			文字間距: <input id="fntsp" type="range" min="0" max="5" step="1" value="2" onchange="redraw()">&nbsp;<span id="fntsp_show"></span><br>
+			檢視倍率: <input id="ratio" type="range" min="1" max="10" step="1" value="5" onchange="redraw()">&nbsp;<span id="ratio_show"></span><br>
+			文字水平位移: <input id="ofsx" type="range" min="-5" max="5" step="1" value="0" onchange="redraw()">&nbsp;<span id="ofsx_show"></span><br>
+			文字垂直位移: <input id="ofsy" type="range" min="-5" max="5" step="1" value="0" onchange="redraw()">&nbsp;<span id="ofsy_show"></span><br>
+			成品下載: <a href="#" download="result.png" onclick="this.href=canvas.toDataURL();">點我</a>
 			</form>
 		</td>
 		<td>
-			<img id="result">
+			結果顯示：
+			<img id="result" align="middle">
 		</td>
 	</tr>
 </table>
 
 <script>
+
+function getHalfNum(cnt){
+	match = content.match(/[\u0000-\u00ff]/g);
+	if(match == null){
+		return 0;
+	}
+	return match.length;
+}
+
 function redraw(){
 	content = document.getElementById("cnt").value;
 	bgColor = document.getElementById("bgc").value;
 	txtColor = document.getElementById("txc").value;
 	fontFace = document.getElementById("fntfce").value;
 	fontSize = parseInt(document.getElementById("fntsz").value);
+	fontSpacing = parseInt(document.getElementById("fntsp").value);
 	viewRatio = parseInt(document.getElementById("ratio").value);
 	txtOffsetX = parseInt(document.getElementById("ofsx").value);
 	txtOffsetY = parseInt(document.getElementById("ofsy").value);
+
+	document.getElementById("fntsz_show").innerHTML = fontSize;
+	document.getElementById("fntsp_show").innerHTML = fontSpacing;
+	document.getElementById("ratio_show").innerHTML = viewRatio;
+	document.getElementById("ofsx_show").innerHTML = txtOffsetX;
+	document.getElementById("ofsy_show").innerHTML = txtOffsetY;
 
 	arcRadius = 3;
 	marginUD = 1;
@@ -51,7 +84,8 @@ function redraw(){
 	paddingUD = 0;
 	paddingLR = 0;
 	bottomPatch = -2;
-	m = content.length * fontSize + paddingLR * 2;
+	cntLen = content.length - getHalfNum(content) * 0.5;
+	m = cntLen * fontSize + fontSpacing * (cntLen-1) + paddingLR * 2;
 
 	canvas.width = (marginLR + arcRadius + paddingLR) * 2 + m;
 	canvas.height = (marginUD + arcRadius + paddingUD) * 2 + fontSize + bottomPatch;
@@ -102,6 +136,7 @@ function redraw(){
 	ctx.closePath();
 	ctx.fill();
 
+	canvas.style.letterSpacing = fontSpacing + "px";
 	ctx.fillStyle = txtColor;
 	ctx.font = fontSize + 'px ' + fontFace;
 	ctx.textAlign = "left";
@@ -113,7 +148,7 @@ function redraw(){
 	);
 	
 	img = document.getElementById('result');
-	img.src = canvas.toDataURL('image/jpeg');
+	img.src = canvas.toDataURL('image/png');
 	img.width = canvas.width * viewRatio;
 	img.height = canvas.height * viewRatio;
 }
