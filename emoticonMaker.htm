@@ -41,6 +41,7 @@
 			檢視倍率: <input id="ratio" type="range" min="1" max="10" step="1" value="5" onchange="redraw()">&nbsp;<span id="ratio_show"></span><br>
 			文字水平位移: <input id="ofsx" type="range" min="-5" max="5" step="1" value="0" onchange="redraw()">&nbsp;<span id="ofsx_show"></span><br>
 			文字垂直位移: <input id="ofsy" type="range" min="-5" max="5" step="1" value="0" onchange="redraw()">&nbsp;<span id="ofsy_show"></span><br>
+			<!--寬度調整: <input id="ofsw" type="range" min="-5" max="5" step="1" value="0" onchange="redraw()">&nbsp;<span id="ofsw_show"></span><br>-->
 			成品下載: <a href="#" download="result.png" onclick="this.href=canvas.toDataURL();">點我</a>
 			</form>
 		</td>
@@ -71,12 +72,14 @@ function redraw(){
 	viewRatio = parseInt(document.getElementById("ratio").value);
 	txtOffsetX = parseInt(document.getElementById("ofsx").value);
 	txtOffsetY = parseInt(document.getElementById("ofsy").value);
+	//widthOffset = parseInt(document.getElementById("ofsw").value);
 
 	document.getElementById("fntsz_show").innerHTML = fontSize;
 	document.getElementById("fntsp_show").innerHTML = fontSpacing;
 	document.getElementById("ratio_show").innerHTML = viewRatio;
 	document.getElementById("ofsx_show").innerHTML = txtOffsetX;
 	document.getElementById("ofsy_show").innerHTML = txtOffsetY;
+	//document.getElementById("ofsw_show").innerHTML = widthOffset;
 
 	arcRadius = 3;
 	marginUD = 1;
@@ -84,8 +87,16 @@ function redraw(){
 	paddingUD = 0;
 	paddingLR = 0;
 	bottomPatch = -2;
-	cntLen = content.length - getHalfNum(content) * 0.5;
-	m = cntLen * fontSize + fontSpacing * (cntLen-1) + paddingLR * 2;
+	cntLen = Math.round(content.length - getHalfNum(content) * 0.5);
+	m = cntLen * fontSize + fontSpacing * (content.length-1) + paddingLR * 2;
+
+	// Estimation of text width
+	/**
+	canvas.style.letterSpacing = fontSpacing + "px";
+	ctx.fillStyle = txtColor;
+	ctx.font = fontSize + 'px ' + fontFace;
+	m = Math.floor(ctx.measureText(content).width) + widthOffset;
+	**/
 
 	canvas.width = (marginLR + arcRadius + paddingLR) * 2 + m;
 	canvas.height = (marginUD + arcRadius + paddingUD) * 2 + fontSize + bottomPatch;
@@ -140,7 +151,7 @@ function redraw(){
 	ctx.fillStyle = txtColor;
 	ctx.font = fontSize + 'px ' + fontFace;
 	ctx.textAlign = "left";
-	ctx.textBaseline = "top"; 
+	ctx.textBaseline = "top";
 	ctx.fillText(
 		content,
 		marginLR + paddingLR + arcRadius + txtOffsetX,
