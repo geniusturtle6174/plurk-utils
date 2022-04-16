@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style type="text/css">
+	#canvasDiv {
+		visibility: hidden;
+		position: absolute;
+		image-rendering: pixelated;
+	}
+	td {
+		text-align: left;
+		padding: 5px;
+	}
+	td.panel {
+		width: 350px;
+		line-height: 2em;
+	}
+	img {
+		border: 1px dotted;
+	}
+	a {
+		text-decoration: none;
+	}
+	a:hover {
+		color: red;
+	}
+</style>
+</head>
+<body>
+
+<font size=7>苦瓜字製造機</font><br>
+<font>感謝各位使用這個小東西，也歡迎各位給點意見</font><br>
+<font>按滑鼠可以點圓點，按復原可以取消一個圓點</font><br><br>
+
+<table>
+	<tr>
+		<td class="panel">
+			<div id="canvasDiv"></div>
+			<form>
+			文字色: <input id="txc" type="color" value="#dfefb0" onchange="redraw()"><br>
+			圓點色: <input id="crc" type="color" value="#fff9d3" onchange="redraw()"><br>
+			外框色: <input id="brc" type="color" value="#55672e" onchange="redraw()"><br>
+			<input type="button" value="復原圓點" onclick="redoCircles()"><br>
+			內容: <input id="cnt" value="咪" onchange="redraw()" maxlength="1"><br>
+			字體名稱: <input id="fntfce" value="Impact" onchange="redraw()"><br>
+			字體大小: <input id="fntsz" type="range" min="5" max="60" step="1" value="48" onchange="redraw()">&nbsp;<span id="fntsz_show"></span><br>
+			文字水平位移: <input id="ofsx" type="range" min="-5" max="5" step="1" value="0" onchange="redraw()">&nbsp;<span id="ofsx_show"></span><br>
+			文字垂直位移: <input id="ofsy" type="range" min="-5" max="5" step="1" value="0" onchange="redraw()">&nbsp;<span id="ofsy_show"></span><br>
+			檢視倍率: <input id="ratio" type="range" min="1" max="10" step="1" value="5" onchange="redraw()">&nbsp;<span id="ratio_show"></span><br>
+			成品下載: <a href="#" download="result.png" onclick="this.href=canvas.toDataURL();">點我</a>
+			</form>
+		</td>
+		<td>
+			結果顯示：
+			<img id="result" align="middle">
+		</td>
+	</tr>
+</table>
+
+<script>
+
+var shapes = [];
+
+function redraw(){
+
+	txColor = document.getElementById("txc").value;
+	crColor = document.getElementById("crc").value;
+	brColor = document.getElementById("brc").value;
+	content = document.getElementById("cnt").value;
+	fontFace = document.getElementById("fntfce").value;
+	fontSize = parseInt(document.getElementById("fntsz").value);
+	txtOffsetX = parseInt(document.getElementById("ofsx").value);
+	txtOffsetY = parseInt(document.getElementById("ofsy").value);
+	viewRatio = parseInt(document.getElementById("ratio").value);
+
+	document.getElementById("fntsz_show").innerHTML = fontSize;
+	document.getElementById("ofsx_show").innerHTML = txtOffsetX;
+	document.getElementById("ofsy_show").innerHTML = txtOffsetY;
+	document.getElementById("ratio_show").innerHTML = viewRatio;
+
+	w = 48;
+	h = 48;
+	div = document.getElementById("canvasDiv");
+	div.innerHTML = "<canvas id=\"canvas\" height=\"" + h + "\" width=\"" + w + "\"></canvas>";
+
+	canvas = document.getElementById('canvas');
+	ctx = canvas.getContext('2d');
+	ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+	// Text
+	ctx.fillStyle = txColor;
+	ctx.font = 'bold ' + fontSize + 'px ' + fontFace;
+	ctx.textAlign = "left";
+	ctx.textBaseline = "top";
+	ctx.beginPath();
+	ctx.fillText(content, txtOffsetX, 1 + txtOffsetY);
+	ctx.closePath();
+	ctx.fill();
+	
+	// Circles
+	ctx.globalCompositeOperation = 'source-atop';
+	ctx.fillStyle = crColor;
+	ctx.strokeStyle = 'none';
+	for(var i=0;i<shapes.length;i++){
+		ctx.beginPath();
+		ctx.arc(shapes[i].x / viewRatio, shapes[i].y / viewRatio, 3, 0, 2 * Math.PI, true);
+		ctx.closePath();
+		ctx.fill();
+	}
+
+	// Border
+	ctx.globalCompositeOperation = 'destination-atop';
+	ctx.strokeStyle = brColor;
+	ctx.font = 'bold ' + (fontSize) + 'px ' + fontFace;
+	ctx.textAlign = "left";
+	ctx.textBaseline = "top";
+	ctx.lineWidth = 5;
+	ctx.beginPath();
+	ctx.strokeText(content, txtOffsetX, 1 + txtOffsetY);
+	ctx.closePath();
+	ctx.stroke();
+
+	var img = new Image();
+	img.src = canvas.toDataURL('image/png');
+	ctx.drawImage(img, 0, 0);
+
+	var img = document.getElementById('result');
+	img.src = canvas.toDataURL('image/png');
+	img.width = canvas.width * viewRatio;
+	img.height = canvas.height * viewRatio;
+}
+
+function redoCircles(){
+	shapes.pop();
+	redraw();
+}
+
+img = document.getElementById('result');
+document.getElementById('result').onmouseup = function(){
+	element = img.getBoundingClientRect();
+	mx = event.clientX - parseInt(element.left);
+	my = event.clientY - parseInt(element.top);
+	shapes.push({
+		x: mx,
+		y: my
+	});
+	redraw();
+}
+
+redraw();
+
+</script>
+
+</body>
+</html>
